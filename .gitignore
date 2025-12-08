@@ -1,0 +1,6 @@
+exploratory/
+outputs/
+midi/
+*.env
+__pycache__/
+src/wandb/
