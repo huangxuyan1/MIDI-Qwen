@@ -4,8 +4,8 @@ python train.py \
   --mmm_config /users/PAS3150/alvinh/music_infilling/configs/tokenizer/tokenizer_100k.json \
   --qwen_config_dir /users/PAS3150/alvinh/music_infilling/configs/models/Qwen3-0.6B-Base \
   --train_config /users/PAS3150/alvinh/music_infilling/configs/train/train_stage1_ablation.json \
-  --output_dir /users/PAS3150/alvinh/music_infilling/outputs \
+  --output_dir /users/PAS3150/alvinh/music_infilling/outputs/vanilla \
   --wandb_project midi_qwen \
-  --wandb_run_name qwen3_stage1_gigamidi_exp1 \
+  --wandb_run_name qwen3_stage1_gigamidi_exp_3 \
   --train_split train \
   --eval_split validation 

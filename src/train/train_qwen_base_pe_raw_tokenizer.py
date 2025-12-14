@@ -45,7 +45,7 @@ import os
 import json
 import argparse
 
-from datasets import load_dataset, load_from_disk, DatasetDict
+from datasets import load_dataset
 from miditok import MMM
 from transformers import (
     AutoConfig,
@@ -55,7 +55,7 @@ from transformers import (
     set_seed,
 )
 
-from ..utils.dataset import MIDIDataset, DataCollatorNoneFilter
+from utils.dataset_raw_nohf import MIDIDataset, DataCollatorNoneFilter
 import dotenv
 
 
@@ -180,8 +180,9 @@ def build_qwen3_mmm_model(qwen_config_dir: str, mmm_tokenizer: MMM):
     """
     config = AutoConfig.from_pretrained(qwen_config_dir)
 
-    vocab_size = 16000
+    vocab_size = mmm_tokenizer.vocab_size
     config.vocab_size = vocab_size
+    print(f"Setting model vocab_size to {vocab_size} from MMM tokenizer.")
 
     bos_token_id = mmm_tokenizer.vocab.get("BOS_None")
     eos_token_id = mmm_tokenizer.vocab.get("EOS_None")
@@ -227,7 +228,6 @@ def main():
     save_total_limit = train_cfg.get("save_total_limit", 3)
     bf16 = train_cfg.get("bf16", False)
     fp16 = train_cfg.get("fp16", False)
-    num_workers = train_cfg.get("num_workers", 4)
 
     # Configure wandb
     if args.wandb_project is not None:
@@ -241,17 +241,16 @@ def main():
 
     # 1) Load HF dataset
     print("Loading dataset...")
-    # hf_ds = load_dataset(
-    #     args.dataset_name,
-    #     args.dataset_config,
-    #     token=os.getenv("HF_TOKEN"),
-    # )
-    hf_ds = load_from_disk("/fs/scratch/PAS3150/gigamidi_filtered_bars8_notes100") 
+    hf_ds = load_dataset(
+        args.dataset_name,
+        args.dataset_config,
+        token=os.getenv("HF_TOKEN"),
+    )
     train_hf = hf_ds[args.train_split]
     eval_hf = hf_ds[args.eval_split] if args.eval_split is not None else None
 
     if eval_hf is not None:
-        max_eval = 1000  # Limit eval to 1000 samples
+        max_eval = 2000  # or 1000
         eval_hf = eval_hf.shuffle(seed=42).select(range(min(max_eval, len(eval_hf))))
 
     # 2) MMM tokenizer
@@ -371,11 +370,6 @@ def main():
         report_to=report_to,
         remove_unused_columns=False,
         run_name=args.wandb_run_name,
-
-        dataloader_num_workers=num_workers, 
-        dataloader_pin_memory=True,
-        dataloader_persistent_workers=True,
-        dataloader_prefetch_factor=4,
     )
 
     # 7) Trainer

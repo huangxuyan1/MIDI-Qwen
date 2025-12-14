@@ -3,4 +3,6 @@ outputs/
 midi/
 *.env
 __pycache__/
-src/wandb/
+src/wandb
+wandb/
+slurm-*.out
