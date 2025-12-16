@@ -155,6 +155,8 @@ class MIDIDataset(DatasetMIDI):
         sample_key_name: str = "input_ids",
         decoder_key_name: str = "decoder_input_ids",
         labels_key_name: str = "labels",
+        force_bar_infilling: bool = False, 
+        use_attribute_controls: bool = True,
     ) -> None:
         self._dataset = dataset
         self.ratio_random_tracks_range = ratio_random_tracks_range
@@ -167,6 +169,9 @@ class MIDIDataset(DatasetMIDI):
         self.bar_fill_ratio = bar_fill_ratio
         self.bar_masking_duration_ratio_range = bar_masking_duration_ratio_range
         self.ac_random_ratio_range = ac_random_ratio_range
+        self.force_bar_infilling = force_bar_infilling
+        self.use_attribute_controls = use_attribute_controls
+
 
         # Infill tokens, set as attribute here to avoid to access to vocab dic
         self._infill_bar_token_id = tokenizer.vocab["Infill_Bar"]
@@ -335,7 +340,7 @@ class MIDIDataset(DatasetMIDI):
         # Set bar infilling or new track gen + their indexes
         # If there is only one track, we do bar infilling as new track gen is not
         # possible in seq2seq.
-        bar_infilling = len(score.tracks) == 1 or random() < self.bar_fill_ratio
+        bar_infilling = True if self.force_bar_infilling else (len(score.tracks) == 1 or random() < self.bar_fill_ratio)
         track_infilling_idx = None
         bar_infilling_start_idx, bar_infilling_end_idx, infill_section_num_bars = None, None, None # noqa: E501
 
@@ -421,10 +426,12 @@ class MIDIDataset(DatasetMIDI):
             #print(ac_indexes)
 
         # Tokenize it
+        ac_indexes_to_pass = ac_indexes if self.use_attribute_controls else None
+
         sequences = self.tokenizer.encode(
             score,
             no_preprocess_score=True,
-            attribute_controls_indexes=ac_indexes,
+            attribute_controls_indexes=ac_indexes_to_pass,
             concatenate_track_sequences=False,
         )
 

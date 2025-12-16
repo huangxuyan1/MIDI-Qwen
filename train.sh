@@ -22,14 +22,14 @@ python -c "import torch; print(torch.__version__, torch.cuda.device_count())"
 nvidia-smi
 
 srun torchrun --standalone --nproc_per_node=1 \
-  -m src.train_launcher \
+  -m src.train_launcher_time_remapped \
   --dataset_name Metacreation/GigaMIDI \
   --dataset_config v2.0.0 \
   --mmm_config /users/PAS3150/alvinh/music_infilling/configs/tokenizer/tokenizer_100k.json \
   --qwen_config_dir /users/PAS3150/alvinh/music_infilling/configs/models/Qwen3-0.6B-Base \
   --train_config /users/PAS3150/alvinh/music_infilling/configs/train/train_stage1_ablation.json \
-  --output_dir /users/PAS3150/alvinh/music_infilling/outputs/vanilla \
+  --output_dir /users/PAS3150/alvinh/music_infilling/outputs/time_remap \
   --wandb_project midi_qwen \
-  --wandb_run_name qwen3_stage1_gigamidi_filtered_exp_vanilla_no_ac_bar_only \
+  --wandb_run_name qwen3_stage1_gigamidi_filtered_exp_time_remapped_no_ac_bar_only \
   --train_split train \
   --eval_split validation
